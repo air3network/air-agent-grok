@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.png" alt="AIR Agent KYA for Grok Bot, by Moca Network" width="720">
+</p>
+
 # AIR Agent KYA: Grok Bot template
 
 Lets a Grok Bot prove who it acts for. You delegate your AIR identity (Moca Network) to the bot
@@ -21,6 +25,9 @@ endpoints and headers.
 | `bot/skills/air-agent-kya/SKILL.md` | The skill: install, login, visit, approval, reading results |
 | `air_kya/` | The runner the skill installs on the bot's computer (`air-kya`, or `python -m air_kya`) |
 | `tests/` | Offline tests (`pytest`) |
+| `assets/` | Brand assets: `avatar.png` (Bot picture), `banner.png` (README, GitHub social preview), AIR logo and mark |
+| `.cursor-plugin/plugin.json` | Name, description and `logo` for Cursor-format marketplaces (the Grok Bot Team Marketplace is managed there) |
+| `docs/screenshots/` | Screenshots for this README; what to capture is in its README |
 
 A Grok Bot template carries the description, skills and routines, not code. So the skill installs
 `air_kya` from this repo on first use, into `~/.air-kya/venv` on the bot's cloud computer (shared by
@@ -29,11 +36,13 @@ every Bot on the account; not your Mac).
 ## Publish the template
 
 1. In the [Grok Bot app](https://x.ai/bot), create a Bot named **AIR Agent KYA** (`Cmd/Ctrl+N`).
+   Brand it: click its name → its picture → **Upload** → `assets/avatar.png` → **Set avatar**, and
+   set the label (under the name) to **by Moca Network**. Only the owner can change these.
    Paste `bot/description.md` (below the line) into the first chat and ask the Bot to remember those
    standing rules. Personal Bots have no description page. A Team Bot still takes this text under
    **About** in its details.
 2. Attach `bot/skills/air-agent-kya/SKILL.md` and ask the Bot to save it as a private skill named
-   `air-agent-kya`, keeping the approval rules as written. If this Bot does not use the skill, open
+   **AIR Agent KYA**, keeping the approval rules as written. If this Bot does not use the skill, open
    **Connect apps**, select the connected count, and enable it under **Private skills**. On a Team
    Bot, **Skills** in the details panel can **Import Existing Skill** instead.
 3. Test with the Bot (below). Then click the Bot's name → **Share** → **Create a copy**. Review the
@@ -43,6 +52,34 @@ every Bot on the account; not your Mac).
 
 Releasing a new version: tag it, update the tag in `SKILL.md`, update the Bot, then **Update
 template** from Share.
+
+### Branding
+
+What each surface can show, per xAI's Grok Bot docs:
+
+| Surface | Name | Picture |
+|---|---|---|
+| The Bot | **AIR Agent KYA**, label **by Moca Network** | `assets/avatar.png`, uploaded (up to 25 MB). The docs say **Duplicate** keeps the avatar; for **Create a copy** they don't say, so check the template preview |
+| Team | Team name | Team icon, Team Settings → **Team Profile** (PNG/JPEG/WebP, up to 2 MB). Shown when a member shares a Bot, so publish from the Moca team |
+| The skill | The name you save it under: **AIR Agent KYA** | No icon field is documented; Grok shows its own placeholder |
+| Template preview and gallery | From the Bot | Name, description, skills and routines only. No screenshot or cover field, so screenshots live in this README |
+
+Machine IDs stay slugs: `name: air-agent-kya` in `SKILL.md` (the Agent Skills format allows only
+lowercase letters, digits and hyphens, and Grok Build uses it as the slash command) and in
+`.cursor-plugin/plugin.json` (Cursor requires kebab-case). The human name is in `metadata.display-name`,
+with `metadata.icon` and `metadata.homepage`. Grok doesn't document reading those three, so they are
+there for loaders that do. Upload `assets/banner.png` as the GitHub social preview (repo Settings →
+General → Social preview).
+
+## Screenshots
+
+<!-- Uncomment once the files in docs/screenshots/ exist (see docs/screenshots/README.md).
+<p align="center">
+  <img src="docs/screenshots/01-standard-catalog.png" alt="Not delegated: the Standard catalog" width="31%">
+  <img src="docs/screenshots/02-delegate.png" alt="Delegation: AIR Console link and code" width="31%">
+  <img src="docs/screenshots/03-approve-vip.png" alt="Approval prompt, then the VIP catalog" width="31%">
+</p>
+-->
 
 ## Try it in the bot
 

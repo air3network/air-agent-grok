@@ -3,8 +3,11 @@ name: air-agent-kya
 description: Use when a task needs an AIR KYA (Know-Your-Agent) gated store, one that publishes /.well-known/air-kya such as https://kya.demo.air3.com, or when the user wants to delegate their AIR identity (Moca Network) to this bot. Covers installing the air-kya runner, the two-step login, kya_visit with per-visit approval, reading the viewer and reason, and what never to do with credentials.
 when-to-use: "KYA store, Know-Your-Agent, AIR identity, Moca, Demo Merch, VIP catalog, member pricing, delegate my AIR account, air-kya"
 metadata:
-  author: MocaNetwork
+  author: Moca Network
   short-description: Prove who this bot acts for at AIR KYA stores
+  display-name: AIR Agent KYA
+  homepage: https://github.com/MocaNetwork/air-agent-grok
+  icon: https://raw.githubusercontent.com/MocaNetwork/air-agent-grok/main/assets/avatar.png
 ---
 
 # AIR Agent KYA
