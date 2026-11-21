@@ -1,5 +1,5 @@
 """AIR Agent KYA for Grok Bot: AIR client, ported from mocaverse/air-kya agent/air.ts
-(via MocaNetwork/air-agent-hermes air.py).
+(via Air3Network/air-agent-hermes air.py).
 
   - delegation: AIR Console device-code grant binds a local P-256 key to the user's AIR account,
                 in two steps (login_start / login_poll) so a bot never blocks on one long command

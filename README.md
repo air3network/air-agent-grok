@@ -10,7 +10,7 @@ a one-time proof that discloses only the claim the store asks for (for example y
 tier). The store checks it and returns the catalog your credential unlocks: public pricing for
 everyone, VIP for verified members.
 
-Grok Bot port of [MocaNetwork/air-agent-hermes](https://github.com/MocaNetwork/air-agent-hermes),
+Grok Bot port of [Air3Network/air-agent-hermes](https://github.com/Air3Network/air-agent-hermes),
 which ports the agent in [mocaverse/air-kya](https://github.com/mocaverse/air-kya). Same protocol,
 endpoints and headers.
 

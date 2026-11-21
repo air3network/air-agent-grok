@@ -6,8 +6,8 @@ metadata:
   author: Moca Network
   short-description: Prove who this bot acts for at AIR KYA stores
   display-name: AIR Agent KYA
-  homepage: https://github.com/MocaNetwork/air-agent-grok
-  icon: https://raw.githubusercontent.com/MocaNetwork/air-agent-grok/main/assets/avatar.png
+  homepage: https://github.com/Air3Network/air-agent-grok
+  icon: https://raw.githubusercontent.com/Air3Network/air-agent-grok/main/assets/avatar.png
 ---
 
 # AIR Agent KYA
@@ -30,8 +30,8 @@ other than `air-kya 0.1.1`, (re)install it:
 
 ```bash
 python3 -m venv ~/.air-kya/venv
-~/.air-kya/venv/bin/pip install --quiet --force-reinstall --no-deps "air-agent-kya-grok @ git+https://github.com/MocaNetwork/air-agent-grok@v0.1.1"
-~/.air-kya/venv/bin/pip install --quiet "air-agent-kya-grok @ git+https://github.com/MocaNetwork/air-agent-grok@v0.1.1"
+~/.air-kya/venv/bin/pip install --quiet --force-reinstall --no-deps "air-agent-kya-grok @ git+https://github.com/Air3Network/air-agent-grok@v0.1.1"
+~/.air-kya/venv/bin/pip install --quiet "air-agent-kya-grok @ git+https://github.com/Air3Network/air-agent-grok@v0.1.1"
 ```
 
 Reinstalling keeps the delegation: it lives in `~/.air-kya/agent/`, not in the venv.
