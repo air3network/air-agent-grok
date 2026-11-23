@@ -1,6 +1,6 @@
 {
   "name": "air-agent-kya",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "AIR Agent KYA by Moca Network: your agent proves who it acts for at AIR Know-Your-Agent stores. You delegate your AIR identity once in the AIR Console; each store visit gets a one-time proof that discloses only the claim the store asks for, after you approve it.",
   "author": { "name": "Moca Network" },
   "homepage": "https://github.com/Air3Network/air-agent-grok",

@@ -2,6 +2,9 @@
 
 Every command prints exactly one JSON object on stdout. Exit code 0 on success (including `pending` and
 `approval_required`), 1 on error. Settings come from AIR_KYA_* environment variables, all optional.
+
+The bot can set environment variables, so none of them can switch approval off, and AIR endpoint overrides must stay
+on AIR hosts (`air.check_air_endpoint`).
 """
 
 from __future__ import annotations
@@ -14,7 +17,7 @@ import sys
 import httpx
 
 from . import __version__, air
-from .kya import MOCK_PROFILES, ApprovalRequired, VisitError, site_client, visit
+from .kya import MOCK_PROFILES, ApprovalRequired, VisitError, describe_disclosure, site_client, terms_digest, visit
 
 DEFAULT_AGENT_LABEL = "Grok Bot (AIR Agent KYA)"
 ENDPOINT_SETTINGS = ("partner_id", "console_url", "api_url", "credential_api_url")
@@ -76,30 +79,35 @@ def logout() -> dict:
     return {"delegated": False, "note": "Local agent key removed. Also revoke the key in the AIR Console."}
 
 
-def run_visit(site: str, mock: str | None, approved: bool) -> dict:
+def run_visit(site: str, mock: str | None, approved: str | None) -> dict:
     # The model picks `site`: those requests only reach public addresses (loopback too in mock mode or with
     # AIR_KYA_ALLOW_LOCAL_SITES). AIR endpoints come from settings, so they keep a plain client.
     allow_local = bool(mock) or flag("allow_local_sites", False)
     # On by default: the Grok Bot computer resolves every hostname into 198.18.0.0/15 behind its egress proxy.
     allow_fake_ip = flag("allow_proxy_fake_ip", True)
-    ask = flag("require_approval", True) and not approved
 
-    def confirm(info: dict) -> None:
-        if not ask:
+    def confirm(terms: dict) -> None:
+        # Always on: an approval is bound to the exact terms (site, environment, programId, fields) the user was
+        # asked about. If discovery now returns anything else, nothing is sent and the user must be asked again.
+        approval_id = terms_digest(terms)
+        if approved == approval_id:
             return
-        claims = ", ".join(info["requested_fields"]) or "the claims it requests"
+        changed = approved is not None
         raise ApprovalRequired({
-            "approval_required": True, **info,
-            "message": (f"Ask the user: \"Let AIR share {claims} from your credential with {info['site']}?\" "
-                        "Only after an explicit yes in this chat, run the same visit with --approved. "
-                        "A no means no; do not retry."),
+            "approval_required": True, **terms, "approval_id": approval_id,
+            **({"terms_changed": True} if changed else {}),
+            "message": (("The site's request changed since the user approved, or the approval_id is wrong; nothing "
+                         "was shared. Ask again about the request below. " if changed else "")
+                        + f"Ask the user: \"Let AIR share {describe_disclosure(terms)}?\" Only after an explicit yes "
+                        f"in this chat, run the same visit with --approved {approval_id}. A no means no; do not retry."),
         })
 
     with _air_client() as http, site_client(allow_local=allow_local, allow_fake_ip=allow_fake_ip) as site_http:
         try:
             return visit(site, http=http, site_http=site_http, mock=mock, env=_env(),
                          delegation=air.load_delegation(_dir()),
-                         mock_air_url=setting("mock_air_url") or air.MOCK_AIR_URL,
+                         mock_air_url=air.check_mock_air_url(setting("mock_air_url") or air.MOCK_AIR_URL)
+                         if mock else air.MOCK_AIR_URL,
                          allow_local=allow_local, confirm=confirm)
         except ApprovalRequired as exc:
             return exc.details
@@ -123,8 +131,8 @@ def parser() -> argparse.ArgumentParser:
     p_visit = subs.add_parser("visit", help="Enter a KYA site and return its catalog")
     p_visit.add_argument("site")
     p_visit.add_argument("--mock", choices=MOCK_PROFILES, help="Local mock-mode site only")
-    p_visit.add_argument("--approved", action="store_true",
-                         help="The user explicitly approved this disclosure in chat")
+    p_visit.add_argument("--approved", metavar="APPROVAL_ID",
+                         help="The approval_id from approval_required, after the user explicitly said yes in chat")
     return p
 
 

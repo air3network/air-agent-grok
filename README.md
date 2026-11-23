@@ -84,7 +84,7 @@ General → Social preview).
 ## Try it in the bot
 
 Chat with **AIR Agent KYA** in the Grok Bot app (not grok.com chat). The first visit installs the
-runner from the public `v0.1.1` tag onto the Bot's cloud computer.
+runner from the public `v0.1.3` tag onto the Bot's cloud computer.
 
 1. "What does Demo Merch sell and at what prices? https://kya.demo.air3.com": the bot installs the
    runner, runs `air-kya visit` (not a page fetch), and answers from the Standard catalog
@@ -108,8 +108,8 @@ All print one JSON object; exit code 1 on error.
 | `air-kya login start [--name <label>]` | New P-256 agent key + AIR Console device code. Returns `verification_url` and `user_code` for the user. Default label: `Grok Bot (AIR Agent KYA)` |
 | `air-kya login finish [--wait <s>]` | Waits up to `--wait` seconds (default 120, max 600) for approval; `pending` means call again. Stores key + bundle (0600) |
 | `air-kya logout` | Delete the local key, bundle and any pending login. Also revoke the key in the AIR Console |
-| `air-kya visit <site>` | KYA handshake. If delegated, first returns `approval_required` without contacting AIR |
-| `air-kya visit <site> --approved` | Same, after the user said yes: discloses and returns the catalog |
+| `air-kya visit <site>` | KYA handshake. If delegated, first returns `approval_required` with the requested fields and an `approval_id`, without contacting AIR |
+| `air-kya visit <site> --approved <approval_id>` | Same, after the user said yes: discloses and returns the catalog, but only if the site still asks for exactly what the `approval_id` covers (else `approval_required` again with `terms_changed`) |
 | `air-kya visit <site> --mock <profile>` | Against a local mock-mode site using `npm run mock-air` |
 
 Mock profiles: `good`, `low-tier`, `wrong-class`, `expired`, `bad-signature`, `untrusted-issuer`,
@@ -122,7 +122,6 @@ bundle's `partnerId` wins over `AIR_KYA_PARTNER_ID`.
 
 | Variable | Default |
 |---|---|
-| `AIR_KYA_REQUIRE_APPROVAL` | `1`: a delegated live visit stops with `approval_required` until run with `--approved` |
 | `AIR_KYA_ALLOW_LOCAL_SITES` | `0`: allow localhost sites outside mock mode (private and link-local stay blocked) |
 | `AIR_KYA_ALLOW_PROXY_FAKE_IP` | `1`: accept site hostnames that resolve into `198.18.0.0/15`, the placeholder addresses a fake-IP proxy hands out (the Grok Bot computer does this for every hostname). Never accepted as a literal IP in the URL |
 | `AIR_KYA_DIR` | `~/.air-kya/agent` |
@@ -130,7 +129,12 @@ bundle's `partnerId` wins over `AIR_KYA_PARTNER_ID`.
 | `AIR_KYA_CONSOLE_URL` | `https://sandbox.agents.air3.com` |
 | `AIR_KYA_API_URL` | `https://air.api.sandbox.air3.com/v2` |
 | `AIR_KYA_CREDENTIAL_API_URL` | `https://credential-testnet.api.sandbox.air3.com` |
-| `AIR_KYA_MOCK_AIR_URL` | `http://127.0.0.1:8799` (mock-mode sites only) |
+| `AIR_KYA_MOCK_AIR_URL` | `http://127.0.0.1:8799` (mock-mode sites only; loopback only) |
+
+The bot can set environment variables, so none of these switches approval off (a delegated live
+visit always stops with `approval_required`), and `AIR_KYA_CONSOLE_URL`, `AIR_KYA_API_URL` and
+`AIR_KYA_CREDENTIAL_API_URL` must be https URLs on `air3.com` or a subdomain: they receive the signed
+session proof and AIR tokens. Anything else fails with `ENDPOINT_NOT_ALLOWED`.
 
 ## Disclosures
 
@@ -152,8 +156,13 @@ Read before adding the template:
 - **Weaker than the Hermes plugin, by design of the platform:**
   - *Approval is enforced by the bot, not the platform.* Grok Bot has no tool-approval gate. The
     runner stops before every live disclosure and the skill tells the bot to ask you, but the bot
-    itself passes `--approved`. It discloses only the fields the site requests, only to the origin
+    itself passes `--approved`. The `approval_id` binds it to the site, program and fields you were
+    asked about; if the site asks for anything else, nothing is sent. It discloses only to the origin
     that issued the nonce.
+  - *Store content reaches the model.* The catalog is returned as data with a notice saying so,
+    the presentation redacted if a store echoes it, control characters removed and its size capped,
+    but a store can still write text aimed at the bot. Discovery claim names are validated, and an
+    `issueUrl` is passed on only on the site's own origin or an `air3.com` host.
   - *The key is readable by every bot on your account.* All Grok Bots on an account share one cloud
     computer. File permissions don't separate them, and the bot could read the key if it ignored its
     rules. Delegate only to an account whose bots you trust, and revoke the key in the AIR Console

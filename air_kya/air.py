@@ -38,7 +38,7 @@ BIND_SCOPES = ["openid", "credentials.read", "credentials.verify"]
 MERCHANT_SESSION_SCOPE = "openid credentials.verify"
 FULL_SESSION_SCOPE = "openid credentials.read credentials.verify"
 CLIENT_ID = "air-agent-broker"
-USER_AGENT = "air-agent-kya-grok/0.1.1"
+USER_AGENT = "air-agent-kya-grok/0.1.3"
 
 KEY_FILE = "agent-key.pem"
 BUNDLE_FILE = "bundle.json"
@@ -62,9 +62,44 @@ class AirEnv:
     partner_id: str
 
 
+AIR_HOSTS = ("air3.com",)  # endpoint overrides must stay on AIR (these hosts or their subdomains), over https
+ENDPOINT_KEYS = ("console_url", "api_url", "credential_api_url")
+
+
+def check_air_endpoint(name: str, url: str) -> str:
+    """`url` if it is https on an AIR host, else AirError: endpoints receive the signed session proof and tokens."""
+    from urllib.parse import urlsplit
+
+    parts = urlsplit(url.strip())
+    try:
+        host, port = parts.hostname or "", parts.port
+    except ValueError:
+        host, port = "", None
+    if (parts.scheme != "https" or parts.username or parts.password or port not in (None, 443)
+            or not any(host == h or host.endswith(f".{h}") for h in AIR_HOSTS)):
+        raise AirError(f"{name} must be an https URL on {' or '.join(AIR_HOSTS)} (or a subdomain); got {url!r}.",
+                       code="ENDPOINT_NOT_ALLOWED")
+    return url.strip().rstrip("/")
+
+
+def check_mock_air_url(url: str) -> str:
+    """Mock AIR runs locally (`npm run mock-air`); only loopback is accepted."""
+    from urllib.parse import urlsplit
+
+    parts = urlsplit(url.strip())
+    if parts.scheme not in ("http", "https") or parts.hostname not in ("127.0.0.1", "localhost", "::1"):
+        raise AirError(f"mock_air_url must be a loopback http(s) URL; got {url!r}.", code="ENDPOINT_NOT_ALLOWED")
+    return url.strip().rstrip("/")
+
+
 def air_env(overrides: dict | None = None) -> AirEnv:
-    """Sandbox defaults, overridden by non-empty plugin settings (console_url, api_url, ...)."""
+    """Sandbox defaults, overridden by non-empty AIR_KYA_* settings (console_url, api_url, ...).
+
+    Endpoint overrides must be https on an AIR host (`check_air_endpoint`)."""
     o = {k: v for k, v in (overrides or {}).items() if isinstance(v, str) and v.strip()}
+    for key in ENDPOINT_KEYS:
+        if key in o:
+            o[key] = check_air_endpoint(key, o[key])
     return AirEnv(
         console_url=o.get("console_url") or SANDBOX["console_url"],
         air_api_url=o.get("api_url") or SANDBOX["air_api_url"],
