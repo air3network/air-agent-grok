@@ -205,7 +205,7 @@ def login_start(env: AirEnv, agent_name: str, *, http: httpx.Client, directory: 
     key = ec.generate_private_key(ec.SECP256R1())
     pub = public_pem(key)
 
-    resp, start = _post(http, f"{env.console_url}/api/oauth/device/code", {
+    resp, start = _post(http, f"{env.console_url}/v1/oauth/device/code", {
         "client_id": CLIENT_ID, "scope": " ".join(BIND_SCOPES),
         "agent_public_key": pub, "agent_name": agent_name,
     }, form=True)
@@ -254,7 +254,7 @@ def login_poll(env: AirEnv, *, http: httpx.Client, directory: Path | None = None
         if not first:
             sleep(interval)
         first = False
-        resp, tok = _post(http, f"{env.console_url}/api/oauth/token", {
+        resp, tok = _post(http, f"{env.console_url}/v1/oauth/token", {
             "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
             "device_code": pending["device_code"], "client_id": CLIENT_ID,
         }, form=True)

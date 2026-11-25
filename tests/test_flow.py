@@ -103,7 +103,7 @@ class Console:
     def __call__(self, req):
         form = {k: v[0] for k, v in parse_qs(req.content.decode()).items()}
         self.calls.append(req.url.path)
-        if req.url.path == "/api/oauth/device/code":
+        if req.url.path == "/v1/oauth/device/code":
             assert form["client_id"] == "air-agent-broker"
             assert form["scope"] == "openid credentials.read credentials.verify"
             assert form["agent_public_key"].startswith("-----BEGIN PUBLIC KEY-----")
@@ -113,7 +113,7 @@ class Console:
         assert form["device_code"] == "dc"
         if self.error:
             return httpx.Response(400, json={"error": self.error})
-        if self.calls.count("/api/oauth/token") <= self.approve_after:
+        if self.calls.count("/v1/oauth/token") <= self.approve_after:
             return httpx.Response(400, json={"error": "authorization_pending"})
         pub = "-----BEGIN PUBLIC KEY-----\nAAAA\n-----END PUBLIC KEY-----" if self.swap_key else self.pub
         return httpx.Response(200, json={"agentPublicKey": pub, "userId": USER, "partnerId": BUNDLE_PARTNER})
